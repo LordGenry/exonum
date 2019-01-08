@@ -29,7 +29,8 @@ use super::{
     CommandName, ServiceFactory,
 };
 use blockchain::Service;
-use node::Node;
+use ctrlc;
+use node::{ExternalMessage, Node};
 
 /// `NodeBuilder` is a high level object,
 /// usable for fast prototyping and creating app from services list.
@@ -122,6 +123,13 @@ impl NodeBuilder {
         panic::set_hook(old_hook);
 
         if let Some(node) = feedback {
+            let channel = node.channel();
+            ctrlc::set_handler(move || {
+                println!("Shutting down...");
+                let _ = channel.send_external_message(ExternalMessage::Shutdown);
+            })
+            .expect("Cannot set CTRL+C handler");
+
             node.run().expect("Node return error")
         }
     }
@@ -135,7 +143,8 @@ impl NodeBuilder {
             Box::new(GenerateCommonConfig),
             Box::new(Finalize),
             Box::new(Maintenance),
-        ].into_iter()
+        ]
+        .into_iter()
         .map(|c| (c.name(), CollectedCommand::new(c)))
         .collect()
     }

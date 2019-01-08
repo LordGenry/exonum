@@ -30,7 +30,8 @@ use super::{
     HashedKey, MapProof, MapProofError, ProofMapIndex, ProofMapKey, ProofPath,
 };
 use crypto::{hash, CryptoHash, Hash, HashStream};
-use encoding::serialize::reexport::{DeserializeOwned, Serialize};
+use proto;
+use serde::{de::DeserializeOwned, Serialize};
 use storage::{Database, Fork, StorageValue};
 
 const IDX_NAME: &'static str = "idx_name";
@@ -1256,15 +1257,21 @@ fn iter(db: Box<dyn Database>) {
     );
 }
 
+#[derive(Debug, PartialEq, ProtobufConvert)]
+#[exonum(pb = "proto::schema::tests::Point", crate = "crate")]
+struct Point {
+    x: u16,
+    y: u16,
+}
+
+impl Point {
+    fn new(x: u16, y: u16) -> Self {
+        Self { x, y }
+    }
+}
+
 fn tree_with_hashed_key(db: Box<dyn Database>) {
     use std::iter::FromIterator;
-
-    encoding_struct! {
-        struct Point {
-            x: u16,
-            y: u16,
-        }
-    }
 
     impl HashedKey for Point {}
 
@@ -1394,7 +1401,7 @@ mod memorydb_tests {
         Box::new(MemoryDB::new())
     }
 
-    common_tests!{}
+    common_tests! {}
 }
 
 mod rocksdb_tests {
@@ -1407,5 +1414,5 @@ mod rocksdb_tests {
         Box::new(RocksDB::open(path, &opts).unwrap())
     }
 
-    common_tests!{}
+    common_tests! {}
 }

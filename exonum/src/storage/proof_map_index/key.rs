@@ -72,12 +72,20 @@ where
 /// # Example
 ///
 /// ```
-/// # #[macro_use] extern crate exonum;
+/// # extern crate exonum;
+/// # #[macro_use] extern crate exonum_derive;
 /// # use exonum::storage::{MemoryDB, Database, ProofMapIndex, HashedKey};
-/// encoding_struct!{
-///     struct Point {
-///         x: i32,
-///         y: i32,
+///
+/// #[derive(ProtobufConvert)]
+/// #[exonum(pb = "exonum::proto::schema::doc_tests::Point")]
+/// struct Point {
+///     x: i32,
+///     y: i32,
+/// }
+///
+/// impl Point {
+///     fn new(x: i32, y: i32) -> Self {
+///         Self { x, y }
 ///     }
 /// }
 ///
@@ -475,7 +483,8 @@ mod tests {
             let mut buf = [0; 32];
             rng.fill_bytes(&mut buf);
             buf
-        }).prefix(1 + rng.gen::<u16>() % 255)
+        })
+        .prefix(1 + rng.gen::<u16>() % 255)
     }
 
     #[test]

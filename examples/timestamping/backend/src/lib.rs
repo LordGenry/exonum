@@ -24,9 +24,10 @@
 )]
 
 extern crate chrono;
-#[macro_use]
 extern crate exonum;
 extern crate exonum_time;
+#[macro_use]
+extern crate exonum_derive;
 #[macro_use]
 extern crate failure;
 #[macro_use]
@@ -34,9 +35,11 @@ extern crate log;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate protobuf;
 extern crate serde_json;
 
 pub mod api;
+pub mod proto;
 pub mod schema;
 pub mod transactions;
 
@@ -44,7 +47,6 @@ use exonum::{
     api::ServiceApiBuilder,
     blockchain::{self, Transaction, TransactionSet},
     crypto::Hash,
-    encoding::Error as StreamStructError,
     helpers::fabric,
     messages::RawTransaction,
     storage::Snapshot,
@@ -75,7 +77,7 @@ impl blockchain::Service for Service {
         schema.state_hash()
     }
 
-    fn tx_from_raw(&self, raw: RawTransaction) -> Result<Box<dyn Transaction>, StreamStructError> {
+    fn tx_from_raw(&self, raw: RawTransaction) -> Result<Box<dyn Transaction>, failure::Error> {
         let tx = TimeTransactions::tx_from_raw(raw)?;
         Ok(tx.into())
     }

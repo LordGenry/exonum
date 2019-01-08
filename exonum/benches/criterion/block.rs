@@ -114,7 +114,6 @@ mod timestamping {
     use exonum::{
         blockchain::{ExecutionResult, Service, Transaction, TransactionContext},
         crypto::{CryptoHash, Hash, PublicKey, SecretKey},
-        encoding::Error as EncodingError,
         messages::{Message, RawTransaction, Signed},
         storage::Snapshot,
     };
@@ -137,7 +136,7 @@ mod timestamping {
             Vec::new()
         }
 
-        fn tx_from_raw(&self, raw: RawTransaction) -> Result<BoxedTx, EncodingError> {
+        fn tx_from_raw(&self, raw: RawTransaction) -> Result<BoxedTx, failure::Error> {
             use exonum::blockchain::TransactionSet;
             Ok(TimestampingTransactions::tx_from_raw(raw)?.into())
         }
@@ -181,22 +180,12 @@ mod timestamping {
     }
 
     impl Transaction for Tx {
-        fn verify(&self) -> bool {
-            // We don't verify transactions within the benchmark, so in this
-            // and following transaction types the verification code is trivial.
-            unimplemented!("never used in benchmark")
-        }
-
         fn execute(&self, _: TransactionContext) -> ExecutionResult {
             Ok(())
         }
     }
 
     impl Transaction for PanickingTx {
-        fn verify(&self) -> bool {
-            unimplemented!("never used in benchmark")
-        }
-
         fn execute(&self, _: TransactionContext) -> ExecutionResult {
             panic!("panic text");
         }
@@ -225,7 +214,6 @@ mod cryptocurrency {
     use exonum::{
         blockchain::{ExecutionError, ExecutionResult, Service, Transaction, TransactionContext},
         crypto::{Hash, PublicKey, SecretKey},
-        encoding::Error as EncodingError,
         messages::{Message, RawTransaction, Signed},
         storage::{MapIndex, ProofMapIndex, Snapshot},
     };
@@ -253,7 +241,7 @@ mod cryptocurrency {
             Vec::new()
         }
 
-        fn tx_from_raw(&self, raw: RawTransaction) -> Result<BoxedTx, EncodingError> {
+        fn tx_from_raw(&self, raw: RawTransaction) -> Result<BoxedTx, failure::Error> {
             use exonum::blockchain::TransactionSet;
             Ok(CryptocurrencyTransactions::tx_from_raw(raw)?.into())
         }
@@ -337,10 +325,6 @@ mod cryptocurrency {
     }
 
     impl Transaction for Tx {
-        fn verify(&self) -> bool {
-            unimplemented!("never used in benchmark")
-        }
-
         fn execute(&self, mut context: TransactionContext) -> ExecutionResult {
             let from = context.author();
             let mut index = ProofMapIndex::new("provable_balances", context.fork());
@@ -355,10 +339,6 @@ mod cryptocurrency {
     }
 
     impl Transaction for SimpleTx {
-        fn verify(&self) -> bool {
-            unimplemented!("never used in benchmark")
-        }
-
         fn execute(&self, mut context: TransactionContext) -> ExecutionResult {
             let from = context.author();
 
@@ -374,10 +354,6 @@ mod cryptocurrency {
     }
 
     impl Transaction for RollbackTx {
-        fn verify(&self) -> bool {
-            unimplemented!("never used in benchmark")
-        }
-
         fn execute(&self, mut context: TransactionContext) -> ExecutionResult {
             let from = context.author();
 
@@ -461,7 +437,8 @@ fn prepare_txs(
             .map(|tx| {
                 schema.add_transaction_into_pool(tx.clone());
                 tx.hash()
-            }).collect()
+            })
+            .collect()
     };
 
     blockchain.merge(fork.into_patch()).unwrap();
@@ -476,12 +453,10 @@ fn assert_transactions_in_pool(blockchain: &Blockchain, tx_hashes: &[Hash]) {
     let snapshot = blockchain.snapshot();
     let schema = Schema::new(&snapshot);
 
-    assert!(
-        tx_hashes
-            .iter()
-            .all(|hash| schema.transactions_pool().contains(&hash)
-                && !schema.transactions_locations().contains(&hash))
-    );
+    assert!(tx_hashes
+        .iter()
+        .all(|hash| schema.transactions_pool().contains(&hash)
+            && !schema.transactions_locations().contains(&hash)));
     assert_eq!(tx_hashes.len() as u64, schema.transactions_pool_len());
 }
 
@@ -550,7 +525,8 @@ fn execute_block_rocksdb(
                 });
             },
             TXS_IN_BLOCK,
-        ).sample_size(50)
+        )
+        .sample_size(50)
         .throughput(|&&txs_in_block| Throughput::Elements(txs_in_block as u32)),
     );
 }

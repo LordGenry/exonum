@@ -60,7 +60,8 @@ impl NodeInfo {
                 .map(|s| ServiceInfo {
                     name: s.service_name().to_owned(),
                     id: s.service_id(),
-                }).collect(),
+                })
+                .collect(),
         }
     }
 }
@@ -142,11 +143,6 @@ impl SystemApi {
                     },
                 );
             }
-
-            info!(
-                "shared_api_state.reconnects_timeout() {:?}",
-                self.shared_api_state.reconnects_timeout()
-            );
 
             for (s, delay) in self.shared_api_state.reconnects_timeout() {
                 outgoing_connections

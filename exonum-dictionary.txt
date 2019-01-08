@@ -27,6 +27,7 @@ CORS
 counterintuitive
 cryptocurrency
 cryptographically
+ctrlc
 deadlinks
 deque
 deref
@@ -47,6 +48,7 @@ fsync
 fuzzer
 gitter
 hashable
+hasher
 healthcheck
 idempotence
 interlayer

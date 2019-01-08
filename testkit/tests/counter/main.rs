@@ -28,17 +28,18 @@ extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate exonum_derive;
+extern crate hex;
 extern crate protobuf;
 
 use exonum::{
     api::{node::public::explorer::TransactionQuery, Error as ApiError},
     blockchain::TransactionErrorType as ErrorType,
     crypto::{self, CryptoHash, PublicKey},
-    encoding::serialize::FromHex,
     helpers::Height,
     messages::{self, RawTransaction, Signed},
 };
 use exonum_testkit::{ApiKind, ComparableSnapshot, TestKit, TestKitApi, TestKitBuilder};
+use hex::FromHex;
 use serde_json::Value;
 
 use counter::{
@@ -661,14 +662,13 @@ fn test_explorer_transaction_info() {
 
     let explorer = BlockchainExplorer::new(testkit.blockchain());
     let block = explorer.block(Height(1)).unwrap();
-    assert!(
-        committed
-            .location_proof()
-            .validate(
-                *block.header().tx_hash(),
-                u64::from(block.header().tx_count())
-            ).is_ok()
-    );
+    assert!(committed
+        .location_proof()
+        .validate(
+            *block.header().tx_hash(),
+            u64::from(block.header().tx_count())
+        )
+        .is_ok());
 }
 
 #[test]
@@ -729,7 +729,8 @@ fn test_explorer_transaction_statuses() {
                 .get("v1/transactions")
                 .unwrap();
             TransactionResult(info.as_committed().unwrap().status().map_err(Clone::clone))
-        }).collect();
+        })
+        .collect();
     check_statuses(&statuses);
 }
 

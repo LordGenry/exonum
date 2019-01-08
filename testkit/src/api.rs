@@ -18,6 +18,7 @@ pub use exonum::api::ApiAccess;
 
 use actix_web::{test::TestServer, App};
 use reqwest::{Client, Response, StatusCode};
+use serde::{de::DeserializeOwned, Serialize};
 use serde_json;
 use serde_urlencoded;
 
@@ -26,7 +27,6 @@ use std::fmt::{self, Display};
 use exonum::{
     api::{self, ApiAggregator, ServiceApiState},
     blockchain::SharedNodeState,
-    encoding::serialize::reexport::{DeserializeOwned, Serialize},
     messages::{RawTransaction, Signed},
     node::ApiSender,
 };
@@ -192,7 +192,8 @@ where
                     "?{}",
                     serde_urlencoded::to_string(query).expect("Unable to serialize query.")
                 )
-            }).unwrap_or_default();
+            })
+            .unwrap_or_default();
         let url = format!(
             "{url}{access}/{prefix}/{endpoint}{query}",
             url = self.test_server_url,
@@ -288,7 +289,8 @@ fn create_test_server(aggregator: ApiAggregator) -> TestServer {
             .scope("public/api", |scope| {
                 trace!("Create public/api");
                 aggregator.extend_backend(ApiAccess::Public, scope)
-            }).scope("private/api", |scope| {
+            })
+            .scope("private/api", |scope| {
                 trace!("Create private/api");
                 aggregator.extend_backend(ApiAccess::Private, scope)
             })

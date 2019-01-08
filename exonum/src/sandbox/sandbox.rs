@@ -645,7 +645,8 @@ impl Sandbox {
                     return false;
                 }
                 true
-            }).cloned()
+            })
+            .cloned()
             .collect()
     }
 
@@ -1050,7 +1051,8 @@ fn sandbox_with_services_uninitialized(
         .map(|(p, a)| ConnectInfo {
             address: a.clone(),
             public_key: *p,
-        }).collect();
+        })
+        .collect();
 
     let api_channel = mpsc::channel(100);
     let db = MemoryDB::new();
@@ -1161,9 +1163,8 @@ mod tests {
     use super::*;
     use blockchain::{ExecutionResult, ServiceContext, TransactionContext, TransactionSet};
     use crypto::{gen_keypair_from_seed, Seed};
-    use encoding;
-    use encoding::protobuf::tests::TxAfterCommit;
     use messages::RawTransaction;
+    use proto::schema::tests::TxAfterCommit;
     use sandbox::sandbox_tests_helper::{add_one_height, SandboxState};
     use storage::Snapshot;
 
@@ -1205,10 +1206,7 @@ mod tests {
             Vec::new()
         }
 
-        fn tx_from_raw(
-            &self,
-            raw: RawTransaction,
-        ) -> Result<Box<dyn Transaction>, encoding::Error> {
+        fn tx_from_raw(&self, raw: RawTransaction) -> Result<Box<dyn Transaction>, failure::Error> {
             let tx = HandleCommitTransactions::tx_from_raw(raw)?;
             Ok(tx.into())
         }
@@ -1397,7 +1395,8 @@ mod tests {
             .with_services(vec![
                 Box::new(AfterCommitService),
                 Box::new(TimestampingService::new()),
-            ]).build();
+            ])
+            .build();
         let state = SandboxState::new();
         add_one_height(&sandbox, &state);
         let tx = TxAfterCommit::new_with_height(Height(1));

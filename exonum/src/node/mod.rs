@@ -351,7 +351,8 @@ impl ConnectListConfig {
             .map(|config| ConnectInfo {
                 public_key: config.validator_keys.consensus_key,
                 address: config.address.clone(),
-            }).collect();
+            })
+            .collect();
 
         ConnectListConfig { peers }
     }
@@ -364,7 +365,8 @@ impl ConnectListConfig {
             .map(|(a, v)| ConnectInfo {
                 address: a.clone(),
                 public_key: v.consensus_key,
-            }).collect();
+            })
+            .collect();
 
         ConnectListConfig { peers }
     }
@@ -586,7 +588,8 @@ impl NodeHandler {
                 } else {
                     None
                 }
-            }).collect();
+            })
+            .collect();
         let message = message.into();
         for address in peers {
             self.send_to_peer(address, message.clone());
@@ -961,7 +964,8 @@ impl Node {
                             .public_allow_origin
                             .clone()
                             .map(into_app_config),
-                    }).into_iter();
+                    })
+                    .into_iter();
                 let private_api_handler = self
                     .api_options
                     .private_api_address
@@ -973,7 +977,8 @@ impl Node {
                             .private_allow_origin
                             .clone()
                             .map(into_app_config),
-                    }).into_iter();
+                    })
+                    .into_iter();
                 // Collects API handlers.
                 public_api_handler
                     .chain(private_api_handler)
@@ -983,7 +988,8 @@ impl Node {
                 self.handler.blockchain.clone(),
                 self.handler.api_state.clone(),
             ),
-        }.start()?;
+        }
+        .start()?;
 
         // Runs NodeHandler.
         let handshake_params = HandshakeParams::new(
@@ -1060,10 +1066,9 @@ mod tests {
         ExecutionResult, Schema, Service, Transaction, TransactionContext, TransactionSet,
     };
     use crypto::gen_keypair;
-    use encoding::protobuf::{tests::TxSimple, ProtobufConvert};
-    use encoding::Error as MessageError;
     use events::EventHandler;
     use helpers;
+    use proto::{schema::tests::TxSimple, ProtobufConvert};
     use storage::{Database, MemoryDB, Snapshot};
     const SERVICE_ID: u16 = 0;
 
@@ -1101,7 +1106,7 @@ mod tests {
             vec![]
         }
 
-        fn tx_from_raw(&self, raw: RawTransaction) -> Result<Box<dyn Transaction>, MessageError> {
+        fn tx_from_raw(&self, raw: RawTransaction) -> Result<Box<dyn Transaction>, failure::Error> {
             Ok(SimpleTransactions::tx_from_raw(raw)?.into())
         }
     }

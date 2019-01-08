@@ -79,6 +79,7 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
+extern crate ctrlc;
 extern crate protobuf;
 extern crate snow;
 extern crate tokio;
@@ -101,8 +102,7 @@ extern crate tempdir;
 #[cfg(all(test, feature = "long_benchmarks"))]
 extern crate test;
 
-#[macro_use]
-pub mod encoding;
+pub mod proto;
 #[macro_use]
 pub mod messages;
 #[macro_use]
